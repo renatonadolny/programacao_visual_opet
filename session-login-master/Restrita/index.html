@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <link rel="icon" href="assets/img/favicon.ico" />
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp"
+    crossorigin="anonymous" />
+
+  <title>Cover Template for Bootstrap</title>
+
+  <!-- Bootstrap core CSS -->
+  <link href="../assets/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Custom styles for this template -->
+  <link href="../assets/css/cover.css" rel="stylesheet">
+</head>
+
+<body class="text-center">
+  <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+    <header class="masthead mb-auto">
+      <div class="inner">
+        <h3 class="masthead-brand">Cover</h3>
+        <nav class="nav nav-masthead justify-content-center">
+          <a class="nav-link " href="../home.html">Home</a>
+          <a class="nav-link active" href="index.html">Restrita</a>
+          <a class="nav-link" href="edit.html" id="login"></a>
+          <a class="nav-link" href="../home.html" id="logout">
+            <i class="fas fa-sign-out-alt"></i>
+          </a>
+        </nav>
+      </div>
+    </header>
+    <main role="main" class="inner cover">
+      <h1 class="cover-heading">Tabela dos Usuarios</h1>
+      <p></p>
+    </main>
+    <table class="table table-bordered">
+      <thead id="tableUsers">
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Nome</th>
+          <th scope="col">E-mail</th>
+          <th scope="col">Senha</th>
+        </tr>
+	
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+	
+    <footer class="mastfoot mt-auto">
+      <div class="inner">
+        <p>Cover template for
+          <a href="https://getbootstrap.com/">Bootstrap</a>, by
+          <a href="https://twitter.com/mdo">@mdo</a>.</p>
+      </div>
+    </footer>
+  </div>
+
+  <script id="hidden-template" type="text/x-custom-template">
+<div class="btn-group">
+        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+            <i class="glyphicon glyphicon-th-list"></i>&nbsp;
+            <span class="caret">Ações</span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+   
+            <li>
+                <a class="dialog-update-item" id="edit-UserNameEdit" onclick="SetUserEdit(this)" style="color: black" href="edit.html", title="Edit">
+                    <i ></i>&nbsp;Edit
+                </a>
+            </li>
+            <li>
+                <a class="dialog-delete-item" id="delete-UserNameDelete" style="color: black"  onclick="RemoveItem(this)" title="Delete">
+                    <i ></i>&nbsp;Delete
+                </a>
+            </li>
+        </ul>
+    </div>
+</script>
+  
+  
+  <!-- Bootstrap core JavaScript
+    ================================================== -->
+  <!-- Placed at the end of the document so the pages load faster -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+  <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
+  <script src="../assets/js/vendor/popper.min.js"></script>
+  <script src="../assets/dist/js/bootstrap.min.js"></script>
+  <script src="../assets/js/models/user.js"></script>
+  <script src="../assets/js/controllers/manageUsers.js"></script>
+  <script src="../assets/js/home.js"></script>
+ 
+ <script>
+ $("#logout").click(ManageUsers.logout);
+  LoadTable();
+  
+  function LoadTable(){
+    var userStorage = localStorage.getItem("users");
+	var users = JSON.parse(userStorage);  
+	
+	$('#tableUsers').find('tr[id=valuesTr]').remove();
+	for (i = 0; i < users.length; i++) { 
+		var email = users[i].email.replace('@','_').replace('.', '_')
+	
+	
+		$('#tableUsers').append('<tr id="valuesTr"><td id="btntd'+email+'"></td><td>'+users[i].name+'</td><td>'+users[i].email+'</td><td>'+users[i].password+'</td></tr>');
+		var template = $('#hidden-template').html();
+		var replacedEdit  = template.replace("UserNameEdit",email);
+		var replacedDelete = replacedEdit.replace("UserNameDelete",email);
+		$("#btntd"+email+"").append(replacedDelete)
+	}
+  }
+  
+	
+	function RemoveItem(item){
+	var user = item.id.split('-');
+	var emailUsuario = user[1].replace('_','@').replace('_','.')
+	if (confirm('Você tem certeza que deseja remover o usuario com o email: ' + emailUsuario)) {	
+	var usuarioLogado = ManageUsers.logged();
+	var removerUsuarioLogado = false;
+	if(usuarioLogado.email == emailUsuario){
+		removerUsuarioLogado = true;
+	}
+	
+	var userStorage = localStorage.getItem("users");
+	var jsonItem = JSON.parse(userStorage);
+	for (var i = 0; i < jsonItem.length; i++){
+		if (jsonItem[i].email == emailUsuario){
+			jsonItem.splice(i,1);
+	}
+	}
+	localStorage.setItem("users", JSON.stringify(jsonItem));
+	if(removerUsuarioLogado==true){	
+		sessionStorage.removeItem("user");
+		window.location.href = "../home.html";
+	}else{
+		LoadTable();
+	}	
+	} else {
+		return false;
+	}
+}
+
+function SetUserEdit(item){
+	var user = item.id.split('-');
+	var emailUsuario = user[1].replace('_','@').replace('_','.')
+	
+	localStorage.setItem("emailToEdit", emailUsuario);
+}
+	
+  </script>
+</body>
+
+</html>
